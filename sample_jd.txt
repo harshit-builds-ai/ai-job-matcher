@@ -1,0 +1,4 @@
+Graduate AI Engineer. Develop solutions leveraging GenAI technologies integrated into cloud-native architectures.
+Mandatory: Python or Java, exposure to AI/ML, familiarity with OpenAI API, basic prompt engineering,
+strong written and verbal English, Agile and Scrum. Desired: NLP (tokenization, embeddings, transformers),
+data engineering for AI, AI ethics and bias mitigation, microservices, containers, DevOps and CI/CD basics.

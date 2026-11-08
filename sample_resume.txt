@@ -1,0 +1,3 @@
+Python developer. Built Python and SQL data pipelines with validation checks and automated reports.
+Built Python-based AI agents using LLM APIs and prompt engineering. Built Android apps end to end.
+Tools: Git, GitHub, REST APIs, Docker basics, Power BI, Excel. Agile, cross-team collaboration.
