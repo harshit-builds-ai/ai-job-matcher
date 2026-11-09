@@ -1,5 +1,7 @@
 # AI Job Matcher
 
+![CI](https://github.com/harshit-builds-ai/ai-job-matcher/actions/workflows/ci.yml/badge.svg)
+
 Compares a resume with a job description and, optionally, uses an LLM to explain the gaps and draft tailored bullets and a cover letter. Built to speed up my own job applications.
 
 ## What it does
@@ -40,6 +42,18 @@ curl -X POST localhost:8000/match -H 'content-type: application/json' \
 docker build -t ai-job-matcher .
 docker run -p 8000:8000 -e OPENAI_API_KEY=... ai-job-matcher
 ```
+
+## Deploy to Google Cloud Run
+
+The container reads `PORT` (set by Cloud Run) and all config from environment variables (12-factor).
+
+```
+gcloud run deploy ai-job-matcher --source . --region asia-south1 --allow-unauthenticated
+```
+
+Keep the API key out of the command line: store it in Secret Manager and attach it with
+`--set-secrets OPENAI_API_KEY=openai-key:latest`. For a public demo, leave the key unset so
+only the offline baseline (`"use_llm": false`) is available and nobody can spend your credits.
 
 ## Tests
 ```bash
