@@ -1,4 +1,12 @@
-Graduate AI Engineer. Develop solutions leveraging GenAI technologies integrated into cloud-native architectures.
-Mandatory: Python or Java, exposure to AI/ML, familiarity with OpenAI API, basic prompt engineering,
-strong written and verbal English, Agile and Scrum. Desired: NLP (tokenization, embeddings, transformers),
-data engineering for AI, AI ethics and bias mitigation, microservices, containers, DevOps and CI/CD basics.
+Graduate AI Engineer
+
+We are looking for a newly graduated developer with experience in Java or Python.
+You will build GenAI solutions on cloud-native, container-based microservices and support
+customers from ideation to MVP.
+
+Requirements:
+- Python, familiarity with the OpenAI API and prompt engineering
+- Basic NLP: tokenization, embeddings, transformers and language models
+- Understanding of Docker, Kubernetes, CI/CD and 12-factor principles
+- Knowledge of AI ethics and bias mitigation
+- Willingness to work in an Agile and Scrum environment and to earn cloud certifications

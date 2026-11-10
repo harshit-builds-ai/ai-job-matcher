@@ -1,46 +1,28 @@
-import json
+from pathlib import Path
 
-from jobmatch import matcher
-from jobmatch.text import bow_similarity, cosine, find_skills
+from jobmatch.matcher import offline_match
+from jobmatch.skills import extract_skills
 
-JD = "Graduate AI Engineer. Python, OpenAI API, prompt engineering, Docker, microservices, NLP, agile."
-RESUME = "Built Python tools using the OpenAI API and prompt engineering. Experience with SQL and Docker."
-
-
-class FakeLLM:
-    def __init__(self, reply): self.reply, self.calls = reply, []
-    def complete(self, system, user):
-        self.calls.append((system, user)); return self.reply
+EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
 
 
-class FakeEmbedder:
-    def embed(self, texts): return [[1.0, 0.0], [1.0, 0.0]]
+def test_extract_skills_handles_aliases_and_boundaries():
+    skills = extract_skills("Experienced with Google Cloud, k8s and JavaScript. No javaland.")
+    assert {"gcp", "kubernetes", "javascript"} <= skills
+    assert "java" not in skills  # "javascript"/"javaland" must not match "java"
 
 
-def test_find_skills_phrases():
-    assert {"python", "openai api", "prompt engineering", "docker"} <= find_skills(RESUME + " python")
+def test_offline_match_on_examples():
+    resume = (EXAMPLES / "sample_resume.txt").read_text(encoding="utf-8")
+    jd = (EXAMPLES / "sample_jd.txt").read_text(encoding="utf-8")
+    result = offline_match(resume, jd)
+    assert result.mode == "offline"
+    assert 0 <= result.score <= 100
+    assert "python" in result.matched_skills
+    assert "kubernetes" in result.missing_skills
 
 
-def test_missing_and_matched_skills():
-    r = matcher.analyze(RESUME + " Python", JD)
-    assert "microservices" in r["skills_missing"] and "nlp" in r["skills_missing"]
-    assert "docker" in r["skills_matched"]
-    assert r["similarity_method"] == "bag-of-words"
-
-
-def test_embedding_path_used():
-    r = matcher.analyze(RESUME, JD, embedder=FakeEmbedder())
-    assert r["similarity"] == 1.0 and r["similarity_method"] == "embeddings"
-
-
-def test_llm_json_with_code_fence_is_parsed_and_prompt_forbids_invention():
-    reply = "```json\n" + json.dumps({"match_score": 70, "strengths": ["Python"], "gaps": [], "suggested_bullets": []}) + "\n```"
-    llm = FakeLLM(reply)
-    r = matcher.analyze(RESUME, JD, llm=llm)
-    assert r["llm_analysis"]["match_score"] == 70
-    assert "Never invent" in llm.calls[0][0]
-
-
-def test_cosine_and_identical_text():
-    assert cosine([1, 0], [0, 1]) == 0.0
-    assert bow_similarity(JD, JD) > 0.99
+def test_offline_match_with_no_jd_skills_scores_from_similarity_only():
+    result = offline_match("python developer", "we sell shoes")
+    assert result.matched_skills == [] and result.missing_skills == []
+    assert 0 <= result.score <= 100

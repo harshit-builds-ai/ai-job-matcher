@@ -1,47 +1,51 @@
-"""NLP basics: tokenization, skill extraction and bag-of-words similarity."""
+"""Small text helpers: tokenizing and cosine similarity."""
+
+from __future__ import annotations
+
 import math
 import re
 from collections import Counter
 
-STOPWORDS = {
-    "the", "and", "for", "with", "you", "your", "are", "will", "our", "from", "that", "this",
-    "have", "has", "can", "use", "using", "such", "including", "all", "any", "into", "their",
-    "who", "not", "but", "its", "work", "role", "team", "support", "ability", "strong", "good",
-}
+MAX_CHARS = 20_000  # hard cap on input size sent anywhere
 
-# Curated phrases to look for. Matching is on whole words/phrases, case-insensitive.
-SKILLS = [
-    "python", "java", "sql", "genai", "generative ai", "llm", "openai api", "openai",
-    "prompt engineering", "nlp", "tokenization", "embeddings", "transformers",
-    "machine learning", "data engineering", "data pipeline", "etl", "pandas",
-    "docker", "kubernetes", "microservices", "containers", "cloud-native", "12-factor",
-    "devops", "ci/cd", "git", "github", "rest api", "fastapi", "aws", "azure", "gcp",
-    "agile", "scrum", "power bi", "excel", "bias mitigation", "ai ethics",
-]
+_WORD = re.compile(r"[a-z0-9+#.]+")
+
+STOPWORDS = frozenset(
+    """a an and are as at be by for from has have in is it its of on or that the this to
+    was were will with you your we our they their i he she not but if so than then them
+    can able about into over under more most such per via etc""".split()
+)
+
+
+def clip(text: str, limit: int = MAX_CHARS) -> str:
+    """Trim very long inputs so a single request cannot become huge."""
+    return text[:limit]
 
 
 def tokenize(text: str) -> list[str]:
-    tokens = re.findall(r"[a-z0-9][a-z0-9+#./-]*", text.lower())
-    return [t.strip("./-") for t in tokens if len(t.strip("./-")) > 2 and t not in STOPWORDS]
+    tokens = []
+    for raw in _WORD.findall(text.lower()):
+        token = raw.strip(".")
+        if token and token not in STOPWORDS:
+            tokens.append(token)
+    return tokens
 
 
-def find_skills(text: str) -> set[str]:
-    low = text.lower()
-    found = set()
-    for skill in SKILLS:
-        if re.search(r"(?<![a-z0-9])" + re.escape(skill) + r"(?![a-z0-9])", low):
-            found.add(skill)
-    return found
+def bow_cosine(a: str, b: str) -> float:
+    """Cosine similarity of two texts using simple bag-of-words counts."""
+    ca, cb = Counter(tokenize(a)), Counter(tokenize(b))
+    if not ca or not cb:
+        return 0.0
+    dot = sum(ca[t] * cb[t] for t in ca.keys() & cb.keys())
+    norm = math.sqrt(sum(v * v for v in ca.values())) * math.sqrt(sum(v * v for v in cb.values()))
+    return dot / norm if norm else 0.0
 
 
-def cosine(a: list[float], b: list[float]) -> float:
-    dot = sum(x * y for x, y in zip(a, b))
-    na, nb = math.sqrt(sum(x * x for x in a)), math.sqrt(sum(y * y for y in b))
-    return dot / (na * nb) if na and nb else 0.0
-
-
-def bow_similarity(text_a: str, text_b: str) -> float:
-    """Offline baseline: cosine similarity between word-count vectors."""
-    ca, cb = Counter(tokenize(text_a)), Counter(tokenize(text_b))
-    vocab = sorted(set(ca) | set(cb))
-    return cosine([ca[w] for w in vocab], [cb[w] for w in vocab])
+def cosine(v1: list[float], v2: list[float]) -> float:
+    """Cosine similarity of two embedding vectors."""
+    if len(v1) != len(v2):
+        raise ValueError("Vectors must have the same length")
+    dot = sum(x * y for x, y in zip(v1, v2))
+    n1 = math.sqrt(sum(x * x for x in v1))
+    n2 = math.sqrt(sum(y * y for y in v2))
+    return dot / (n1 * n2) if n1 and n2 else 0.0

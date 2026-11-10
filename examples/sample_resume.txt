@@ -1,3 +1,12 @@
-Python developer. Built Python and SQL data pipelines with validation checks and automated reports.
-Built Python-based AI agents using LLM APIs and prompt engineering. Built Android apps end to end.
-Tools: Git, GitHub, REST APIs, Docker basics, Power BI, Excel. Agile, cross-team collaboration.
+Sample Candidate
+Python developer with experience building GenAI applications.
+
+Skills: Python, SQL, FastAPI, Docker, Git, pytest, OpenAI API, prompt engineering,
+embeddings, REST API development, GitHub Actions, Agile and Scrum.
+
+Projects:
+- Built a Retrieval-Augmented Generation (RAG) chatbot in Python using embeddings and cosine similarity.
+- Created a FastAPI microservice packaged in Docker with automated pytest tests.
+
+Experience:
+- Wrote Python and SQL data pipelines for daily reports and validation checks in an Agile team.
