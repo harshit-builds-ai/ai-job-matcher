@@ -11,6 +11,15 @@ Compares a resume with a job description and, optionally, uses an LLM to explain
 
 ## Project layout
 
+```
+src/jobmatch/   api.py (FastAPI), cli.py, service.py, matcher.py, llm.py,
+                prompts.py, skills.py, text.py, config.py
+examples/       sample resume and job description
+tests/          pytest tests (fake LLM and embedding clients, no network)
+Dockerfile      container image (reads PORT, default 8000)
+.github/        CI: tests + Docker build
+```
+
 ## GenAI design choices
 
 - Prompts live in `prompts.py` as reviewable templates.
@@ -51,6 +60,21 @@ Endpoints: `GET /health`, `POST /match` (fields: `resume`, `jd`, `use_llm`, `cov
 docker build -t ai-job-matcher .
 docker run -p 8000:8000 -e OPENAI_API_KEY=... ai-job-matcher
 ```
+
+## Deploy to Google Cloud Run
+
+The container reads `PORT` (12-factor), so it runs on Cloud Run without changes. These are the commands, not a live deployment:
+
+```bash
+# offline mode only (no API key, so use_llm=true returns 503)
+gcloud run deploy ai-job-matcher --source . --region asia-south1 --allow-unauthenticated
+
+# with LLM mode: keep the key in Secret Manager and require authentication
+gcloud run deploy ai-job-matcher --source . --region asia-south1 \
+  --set-secrets OPENAI_API_KEY=openai-key:latest --no-allow-unauthenticated
+```
+
+Do not combine an API key with `--allow-unauthenticated`: anyone with the URL could spend your OpenAI credit.
 
 ## Tests
 
